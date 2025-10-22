@@ -1,0 +1,41 @@
+datasource db {
+  provider = "postgres"
+  url      = "postgresql://postgres:XxOqsKplVfQbrfQwwAiZcOssPrfxfyFi@shortline.proxy.rlwy.net:34304/railway"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum NotificationType {
+  bonus
+  info
+  success
+  warning
+  error
+}
+
+model Account {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String
+  password String
+
+  notifications Notification[] @relation("NotificationUser")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+  title     String
+  message   String
+  href      String?
+  type      NotificationType
+  read      Boolean          @default(false)
+  active    Boolean          @default(true)
+  userId    String
+  user      Account          @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Notification_userId_idx")
+}

@@ -9,19 +9,31 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "@tanstack/react-query": "^5.90.5",
+    "@trpc/client": "^11.6.0",
+    "@trpc/react-query": "^11.6.0",
+    "@trpc/server": "^11.6.0",
+    "devalue": "^5.4.2",
+    "next": "15.5.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.6"
+    "react-hot-toast": "^2.6.0",
+    "superjson": "^2.2.3",
+    "toast": "^0.5.4",
+    "ws": "^8.18.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.5.6",
-    "@eslint/eslintrc": "^3"
+    "prisma": "^6.17.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
