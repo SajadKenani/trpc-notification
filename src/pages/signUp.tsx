@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { trpc } from "@/utils/trpc";
+import { trpc } from "@/lib/trpc";
 import styles from "./Navigation.module.css";
 
 const SignUp = () => {
