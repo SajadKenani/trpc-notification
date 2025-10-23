@@ -1,48 +1,78 @@
-import { trpc } from "@/utils/trpc";
-import { httpBatchLink, loggerLink, splitLink, wsLink, createWSClient } from "@trpc/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import type { AppType } from "next/app";
-import { NotificationProvider } from "@/components/NotificationProvider";
+'use client';
 
-const getBaseUrl = () => {
-  if (typeof window !== "undefined") return "";
-  return `http://localhost:3000`;
+import type { QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import {
+  httpBatchStreamLink,
+  httpSubscriptionLink,
+  loggerLink,
+  splitLink,
+} from '@trpc/client';
+import { createQueryClient } from '@/lib/query-client';
+import { trpc } from '@/lib/trpc';
+import { useState } from 'react';
+import SuperJSON from 'superjson';
+import { NotificationProvider } from '@/components/NotificationProvider';
+import { AppProps } from 'next/app';
+import { AppComponent } from 'next/dist/shared/lib/router/router';
+
+let clientQueryClientSingleton: QueryClient | undefined = undefined;
+const getQueryClient = () => {
+  if (typeof window === 'undefined') {
+    // Server: always make a new query client
+    return createQueryClient();
+  } else {
+    // Browser: use singleton pattern to keep the same query client
+    return (clientQueryClientSingleton ??= createQueryClient());
+  }
 };
 
-const MyApp: AppType = ({ Component, pageProps }) => {
-  const [queryClient] = useState(() => new QueryClient());
+const getUrl = () => {
+  const base = (() => {
+    if (typeof window !== 'undefined') return window.location.origin;
+    if (process.env.APP_URL) return process.env.APP_URL;
+    return `http://localhost:${process.env.PORT ?? 3000}`;
+  })();
 
+  return `${base}/api/trpc`;
+};
+
+export default function MyApp({ Component, pageProps }: {Component: AppComponent, pageProps: AppProps}) {
+  const queryClient = getQueryClient();
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
+        // adds pretty logs to your console in development and logs errors in production
         loggerLink(),
         splitLink({
-          condition(op) {
-            return op.type === "subscription";
-          },
-          true: wsLink({
-            client: createWSClient({
-              url: getBaseUrl().replace(/^http/, "ws") + "/api/trpc",
-            }),
+          condition: (op) => op.type === 'subscription',
+          true: httpSubscriptionLink({
+            url: getUrl(),
+            /**
+             * @see https://trpc.io/docs/v11/data-transformers
+             */
+            transformer: SuperJSON,
           }),
-          false: httpBatchLink({
-            url: `${getBaseUrl()}/api/trpc`,
+          false: httpBatchStreamLink({
+            url: getUrl(),
+            /**
+             * @see https://trpc.io/docs/v11/data-transformers
+             */
+            transformer: SuperJSON,
           }),
         }),
       ],
-    })
+    }),
   );
-
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={getQueryClient()}>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <NotificationProvider>
           <Component {...pageProps} />
         </NotificationProvider>
-      </QueryClientProvider>
-    </trpc.Provider>
+      </trpc.Provider>
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+    </QueryClientProvider>
   );
-};
-
-export default MyApp;
+}

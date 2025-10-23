@@ -1,4 +1,4 @@
-import { trpc } from "@/utils/trpc";
+import { trpc } from "@/lib/trpc"; 
 import React, { useEffect, useState } from "react";
 import styles from "./Navigation.module.css";
 import { useNotifications } from "@/components/NotificationProvider";
@@ -11,37 +11,37 @@ import { useNotifications } from "@/components/NotificationProvider";
 
 export default function Notifications() {
   const { notifications, unreadCount, markAllAsRead, setNotifications } = useNotifications();
-const [userId, setUserId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
 
-    useEffect(() => {
-      if (typeof window === "undefined") return;
-      const stored = localStorage.getItem("@user_id");
-      if (stored) setUserId(stored);
-    }, []);
-  
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem("@user_id");
+    if (stored) setUserId(stored);
+  }, []);
+
   const { data: accounts = [], isLoading: accountsLoading } =
     trpc.account.getAccounts.useQuery();
 
-      const notificationsQuery = trpc.notifications.list.useQuery(
-        { userId },
-        {
-          enabled: !!userId,
-          refetchOnWindowFocus: false,
-          staleTime: 30_000,
-        }
-      );
+  const notificationsQuery = trpc.notifications.list.useQuery(
+    { userId },
+    {
+      enabled: !!userId,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    }
+  );
 
   // --- Add notification mutation ---
-const addNotification = trpc.notifications.addNotification.useMutation({
-  onSuccess: async (data) => {
-    console.log("Notification added successfully!", data);
-    const freshNotifications = await notificationsQuery.refetch();
-    if (freshNotifications.data) {
-      setNotifications(freshNotifications.data); 
-    }
-  },
-  onError: (error) => console.error(error),
-});
+  const addNotification = trpc.notifications.addNotification.useMutation({
+    onSuccess: async (data) => {
+      console.log("Notification added successfully!", data);
+      const freshNotifications = await notificationsQuery.refetch();
+      if (freshNotifications.data) {
+        setNotifications(freshNotifications.data);
+      }
+    },
+    onError: (error) => console.error(error),
+  });
 
   const handleNotificationAddition = (accountId: string) => {
     const account = accounts?.find(a => a.id === accountId);
@@ -67,7 +67,7 @@ const addNotification = trpc.notifications.addNotification.useMutation({
         <h1 className={styles.notificationsTitle}>
           🔔 Notifications {unreadCount > 0 && `(${unreadCount})`}
         </h1>
-        
+
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
@@ -84,14 +84,14 @@ const addNotification = trpc.notifications.addNotification.useMutation({
             Mark All as Read
           </button>
         )}
-        
+
         {notifications.length === 0 ? (
           <p className={styles.notificationsEmpty}>No notifications yet.</p>
         ) : (
           <div className={styles.notificationsList}>
             {notifications.map((n) => (
-              <div 
-                key={n.id} 
+              <div
+                key={n.id}
                 className={styles.notificationItem}
                 style={{
                   // backgroundColor: n.read ? "#f5f5f5" : "#e3f2fd",

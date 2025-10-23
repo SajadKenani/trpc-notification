@@ -34,6 +34,8 @@ export const notificationRouter = router({
               id: true,
               name: true,
               email: true,
+              password: true,
+              notifications: true
             },
           },
         },

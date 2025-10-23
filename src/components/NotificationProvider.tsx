@@ -8,49 +8,36 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { trpc } from "@/utils/trpc";
+import { trpc } from "@/lib/trpc";
 import { toast, Toaster  } from "react-hot-toast";
 
-interface NotificationItem {
+export interface NotificationItem {
     userId: string;
     type: string;
     message: string;
     title: string;
     id: string;
-    createdAt: string;
+    createdAt: Date;
     read: boolean;
     user?: {
         id: string;
         email: string;
         name: string;
+        password: string;
     };
 }
-
-// (parameter) notification: {
-//     userId: string;
-//     type: string;
-//     message: string | null;
-//     title: string | null;
-//     id: string;
-//     createdAt: string;
-//     user?: {
-//         id: string;
-//         email: string;
-//         name: string;
-//     } | undefined;
-// }
 
 interface NotificationContextType {
   notifications: NotificationItem[];
   unreadCount: number;
   markAllAsRead: () => void;
-  setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
+ setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>;
 }
 
 const NotificationContext = createContext<NotificationContextType>({
   notifications: [],
   unreadCount: 0,
-  markAllAsRead: () => { },
+  markAllAsRead: () => {},
   setNotifications: () => {},
 });
 
